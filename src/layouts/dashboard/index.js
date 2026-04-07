@@ -20,31 +20,59 @@ import reportsLineChartData from "layouts/dashboard/data/reportsLineChartData";
 
 // Dashboard components
 import Projects from "layouts/dashboard/components/Projects";
-import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
-
-// Import API đếm sản phẩm
-import { getTotalProductsCount } from "../../services/ProductService";
+//import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
 
 function Dashboard() {
   const { sales, tasks } = reportsLineChartData;
 
-  // State lưu tổng số sản phẩm lấy từ DB
-  const [productCount, setProductCount] = useState(0);
+  // === STATE LƯU TRỮ DỮ LIỆU THẬT ===
+  const [stats, setStats] = useState({
+    productsCount: 0,
+    usersCount: 0,
+    ordersCount: 0,
+    totalRevenue: 0,
+  });
 
-  // Gọi API kéo dữ liệu khi trang load
+  // === GỌI API LẤY THỐNG KÊ KHI VÀO TRANG ===
   useEffect(() => {
-    const fetchCount = async () => {
-      const count = await getTotalProductsCount();
-      setProductCount(count);
-    };
-    fetchCount();
+    fetchDashboardStats();
   }, []);
+
+  const fetchDashboardStats = async () => {
+    try {
+      // 1. Lấy tổng Sản Phẩm
+      const prodRes = await fetch("http://localhost:8900/api/catalog/admin/products/count");
+      const prodData = prodRes.ok ? await prodRes.json() : 0;
+
+      // 2. Lấy tổng Người Dùng (Đã dùng API tránh đụng độ)
+      const userRes = await fetch("http://localhost:8900/api/accounts/users/dashboard/count");
+      const userData = userRes.ok ? await userRes.json() : 0;
+
+      // 3. Lấy tổng Đơn Hàng (Đã dùng API tránh đụng độ)
+      const orderRes = await fetch("http://localhost:8900/api/shop/orders/dashboard/count");
+      const orderData = orderRes.ok ? await orderRes.json() : 0;
+
+      // 4. Lấy tổng Doanh Thu (Đã dùng API tránh đụng độ)
+      const revenueRes = await fetch("http://localhost:8900/api/shop/orders/dashboard/revenue");
+      const revenueData = revenueRes.ok ? await revenueRes.json() : 0;
+
+      // Cập nhật State một lần
+      setStats({
+        productsCount: prodData,
+        usersCount: userData,
+        ordersCount: orderData,
+        totalRevenue: revenueData,
+      });
+    } catch (error) {
+      console.error("Lỗi khi tải dữ liệu Dashboard:", error);
+    }
+  };
 
   return (
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox py={3}>
-        {/* === HÀNG 1: 4 Ô THỐNG KÊ (ĐÃ CÓ DATA THẬT Ở Ô ĐẦU TIÊN) === */}
+        {/* === HÀNG 1: 4 Ô THỐNG KÊ (DỮ LIỆU THẬT TỪ SQL) === */}
         <Grid container spacing={3}>
           <Grid item xs={12} md={6} lg={3}>
             <MDBox mb={1.5}>
@@ -52,11 +80,11 @@ function Dashboard() {
                 color="success"
                 icon="store"
                 title="Tổng Sản Phẩm"
-                count={productCount} // Kéo data thật từ SQL Server vào đây
+                count={stats.productsCount}
                 percentage={{
                   color: "success",
-                  amount: "+1",
-                  label: "vừa cập nhật",
+                  amount: "Cập nhật",
+                  label: " real-time",
                 }}
               />
             </MDBox>
@@ -66,11 +94,11 @@ function Dashboard() {
               <ComplexStatisticsCard
                 icon="leaderboard"
                 title="Người Dùng"
-                count="2,300"
+                count={stats.usersCount}
                 percentage={{
                   color: "success",
-                  amount: "+3%",
-                  label: "so với tháng trước",
+                  amount: "Cập nhật",
+                  label: " real-time",
                 }}
               />
             </MDBox>
@@ -81,11 +109,11 @@ function Dashboard() {
                 color="warning"
                 icon="shopping_cart"
                 title="Đơn Hàng"
-                count="34"
+                count={stats.ordersCount}
                 percentage={{
                   color: "error",
-                  amount: "",
-                  label: "Đang chờ xử lý",
+                  amount: "Cập nhật",
+                  label: " real-time",
                 }}
               />
             </MDBox>
@@ -96,11 +124,11 @@ function Dashboard() {
                 color="info"
                 icon="attach_money"
                 title="Doanh Thu"
-                count="$91,000"
+                count={new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(stats.totalRevenue)}
                 percentage={{
                   color: "success",
-                  amount: "+5%",
-                  label: "so với hôm qua",
+                  amount: "Cập nhật",
+                  label: " real-time",
                 }}
               />
             </MDBox>
@@ -150,7 +178,7 @@ function Dashboard() {
           </Grid>
         </MDBox>
 
-        {/* === HÀNG 3: BẢNG DỰ ÁN VÀ TỔNG QUAN ĐƠN HÀNG === */}
+        {/* === HÀNG 3: BẢNG DỰ ÁN VÀ TỔNG QUAN ĐƠN HÀNG (GIỮ NGUYÊN NHƯ CŨ CỦA BẠN) === */}
         <MDBox>
           <Grid container spacing={3}>
             <Grid item xs={12} md={6} lg={8}>

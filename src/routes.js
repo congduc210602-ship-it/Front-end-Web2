@@ -48,7 +48,7 @@ import ProductsUnified from "layouts/products-unified";
 import UsersUnified from "layouts/users-unified";
 import OrdersUnified from "layouts/orders-unified";
 import CategoriesUnified from "layouts/categories-unified";
-
+import ReviewsUnified from "layouts/reviews-unified";
 // @mui icons
 import Icon from "@mui/material/Icon";
 
@@ -89,6 +89,15 @@ const routes = [
     route: "/orders",
     component: <OrdersUnified />,
   },
+  //RECOMMONDATIONS
+  {
+    type: "collapse",
+    name: "Quản Lý Đánh Giá",
+    key: "reviews",
+    icon: <Icon fontSize="small">star_rate</Icon>, // Icon hình ngôi sao
+    route: "/reviews",
+    component: <ReviewsUnified />,
+  },
   {
     type: "collapse",
     name: "Dashboard",
@@ -115,7 +124,7 @@ const routes = [
   },
   {
     type: "collapse",
-    name: "RTL",
+    name: "RTL (X)",
     key: "rtl",
     icon: <Icon fontSize="small">format_textdirection_r_to_l</Icon>,
     route: "/rtl",
