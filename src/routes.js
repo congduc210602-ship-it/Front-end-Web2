@@ -49,6 +49,7 @@ import UsersUnified from "layouts/users-unified";
 import OrdersUnified from "layouts/orders-unified";
 import CategoriesUnified from "layouts/categories-unified";
 import ReviewsUnified from "layouts/reviews-unified";
+import Promotions from "layouts/promotions-unified";
 // @mui icons
 import Icon from "@mui/material/Icon";
 
@@ -98,6 +99,15 @@ const routes = [
     route: "/reviews",
     component: <ReviewsUnified />,
   },
+  // PROMOTIONS
+{
+  type: "collapse",
+  name: "Khuyến mãi",
+  key: "promotions",
+  icon: <Icon fontSize="small">loyalty</Icon>, // Dùng icon hình cái mác giảm giá
+  route: "/promotions",
+  component: <Promotions />,
+},
   {
     type: "collapse",
     name: "Dashboard",

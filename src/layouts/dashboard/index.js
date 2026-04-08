@@ -20,7 +20,7 @@ import reportsLineChartData from "layouts/dashboard/data/reportsLineChartData";
 
 // Dashboard components
 import Projects from "layouts/dashboard/components/Projects";
-//import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
+import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
 
 function Dashboard() {
   const { sales, tasks } = reportsLineChartData;
@@ -40,23 +40,24 @@ function Dashboard() {
 
   const fetchDashboardStats = async () => {
     try {
-      // 1. Lấy tổng Sản Phẩm
+      // 1. Tổng Sản Phẩm (Đã đúng)
       const prodRes = await fetch("http://localhost:8900/api/catalog/admin/products/count");
       const prodData = prodRes.ok ? await prodRes.json() : 0;
 
-      // 2. Lấy tổng Người Dùng (Đã dùng API tránh đụng độ)
-      const userRes = await fetch("http://localhost:8900/api/accounts/users/dashboard/count");
+      // 2. Tổng Người Dùng (SỬA LẠI ĐƯỜNG DẪN Ở ĐÂY)
+      // Thêm /admin vào trước /users
+      const userRes = await fetch("http://localhost:8900/api/accounts/admin/users/dashboard/count");
       const userData = userRes.ok ? await userRes.json() : 0;
 
-      // 3. Lấy tổng Đơn Hàng (Đã dùng API tránh đụng độ)
+      // 3. Tổng Đơn Hàng (Đã đúng theo OrderController bạn gửi)
       const orderRes = await fetch("http://localhost:8900/api/shop/orders/dashboard/count");
       const orderData = orderRes.ok ? await orderRes.json() : 0;
 
-      // 4. Lấy tổng Doanh Thu (Đã dùng API tránh đụng độ)
+      // 4. Tổng Doanh Thu (Đã đúng theo OrderController bạn gửi)
       const revenueRes = await fetch("http://localhost:8900/api/shop/orders/dashboard/revenue");
       const revenueData = revenueRes.ok ? await revenueRes.json() : 0;
 
-      // Cập nhật State một lần
+
       setStats({
         productsCount: prodData,
         usersCount: userData,
