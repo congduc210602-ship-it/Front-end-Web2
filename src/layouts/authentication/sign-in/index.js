@@ -34,7 +34,7 @@ function Basic() {
     setError("");
     try {
       const user = await login(userName, userPassword);
-      if (user && user.role.roleName === "ADMIN") {
+      if (user && user.role === "ADMIN") {
         alert("Chào mừng Admin quay trở lại!");
         navigate("/dashboard"); // Đăng nhập xong đẩy vào Dashboard
       } else {

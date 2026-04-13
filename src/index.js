@@ -17,6 +17,9 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "App";
+import "./index.css";
+import { CartProvider } from "./context/CartContext";
+import { AuthProvider } from "./context/AuthContext"; // 1. Import AuthProvider mới tạo
 
 // Material Dashboard 2 React Context Provider
 import { MaterialUIControllerProvider } from "context";
@@ -27,7 +30,12 @@ const root = createRoot(container);
 root.render(
   <BrowserRouter>
     <MaterialUIControllerProvider>
-      <App />
+      {/* 2. Bọc AuthProvider ra ngoài cùng để quản lý User */}
+      <AuthProvider>
+        <CartProvider>
+          <App />
+        </CartProvider>
+      </AuthProvider>
     </MaterialUIControllerProvider>
   </BrowserRouter>
 );

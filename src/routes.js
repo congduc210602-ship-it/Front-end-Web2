@@ -50,6 +50,8 @@ import OrdersUnified from "layouts/orders-unified";
 import CategoriesUnified from "layouts/categories-unified";
 import ReviewsUnified from "layouts/reviews-unified";
 import Promotions from "layouts/promotions-unified";
+
+
 // @mui icons
 import Icon from "@mui/material/Icon";
 
@@ -60,7 +62,7 @@ const routes = [
     name: "Quản Lý Sản phẩm",
     key: "products",
     icon: <Icon fontSize="small">shopping_basket</Icon>, // Icon giỏ hàng
-    route: "/products",
+    route: "/admin/products",
     component: <ProductsUnified />,
   },
   //CATEGORY
@@ -69,7 +71,7 @@ const routes = [
     name: "Quản Lý Danh Mục",
     key: "categories",
     icon: <Icon fontSize="small">category</Icon>, // Icon hình khối danh mục
-    route: "/categories",
+    route: "/admin/categories",
     component: <CategoriesUnified />,
   },
   //USER
@@ -78,7 +80,7 @@ const routes = [
     name: "Quản Lý Người Dùng",
     key: "users",
     icon: <Icon fontSize="small">group</Icon>,
-    route: "/users",
+    route: "/admin/users",
     component: <UsersUnified />,
   },
   //ORDER
@@ -87,7 +89,7 @@ const routes = [
     name: "Quản Lý Đơn Hàng",
     key: "orders",
     icon: <Icon fontSize="small">receipt_long</Icon>,
-    route: "/orders",
+    route: "/admin/orders",
     component: <OrdersUnified />,
   },
   //RECOMMONDATIONS
@@ -96,7 +98,7 @@ const routes = [
     name: "Quản Lý Đánh Giá",
     key: "reviews",
     icon: <Icon fontSize="small">star_rate</Icon>, // Icon hình ngôi sao
-    route: "/reviews",
+    route: "/admin/reviews",
     component: <ReviewsUnified />,
   },
   // PROMOTIONS
@@ -105,7 +107,7 @@ const routes = [
   name: "Khuyến mãi",
   key: "promotions",
   icon: <Icon fontSize="small">loyalty</Icon>, // Dùng icon hình cái mác giảm giá
-  route: "/promotions",
+  route: "/admin/promotions",
   component: <Promotions />,
 },
   {
@@ -113,7 +115,7 @@ const routes = [
     name: "Dashboard",
     key: "dashboard",
     icon: <Icon fontSize="small">dashboard</Icon>,
-    route: "/dashboard",
+    route: "/admin/dashboard",
     component: <Dashboard />,
   },
   {

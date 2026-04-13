@@ -15,6 +15,17 @@ export const getAllProducts = async () => {
   }
 };
 
+export const getProductById = async (id) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/products/${id}`);
+    if (!response.ok) throw new Error("Lỗi khi lấy chi tiết sản phẩm");
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
 // 2. Hàm upload ảnh
 export const uploadProductImage = async (file) => {
   const formData = new FormData();
