@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom"; // THÊM useLocation
 
 // @mui material components
 import Card from "@mui/material/Card";
@@ -17,15 +17,18 @@ import BasicLayout from "layouts/authentication/components/BasicLayout";
 // Images
 import bgImage from "assets/images/bg-sign-in-basic.jpeg";
 
-// API Service
-import { login } from "services/AuthService";
+// API Service và Context
+import { useAuth } from "context/AuthContext"; // SỬ DỤNG AuthContext
 
 function Basic() {
   const [rememberMe, setRememberMe] = useState(false);
   const [userName, setUserName] = useState("");
   const [userPassword, setUserPassword] = useState("");
   const [error, setError] = useState("");
+
   const navigate = useNavigate();
+  const location = useLocation(); // LẤY ĐƯỜNG DẪN TRƯỚC ĐÓ
+  const { loginUser } = useAuth(); // LẤY HÀM LOGIN TỪ CONTEXT
 
   const handleSetRememberMe = () => setRememberMe(!rememberMe);
 
@@ -33,12 +36,20 @@ function Basic() {
     e.preventDefault();
     setError("");
     try {
-      const user = await login(userName, userPassword);
+      // 1. Gọi hàm login từ AuthContext thay vì gọi trực tiếp AuthService
+      const user = await loginUser(userName, userPassword);
+
+      // 2. Xử lý chuyển hướng dựa trên Role
       if (user && user.role === "ADMIN") {
         alert("Chào mừng Admin quay trở lại!");
-        navigate("/dashboard"); // Đăng nhập xong đẩy vào Dashboard
+        navigate("/dashboard");
+      } else if (user && user.role === "USER") {
+        alert("Đăng nhập thành công!");
+        // Nếu người dùng bị bắt đăng nhập từ trang giỏ hàng, trả họ về giỏ hàng. Nếu không thì về trang chủ.
+        const origin = location.state?.from?.pathname || "/";
+        navigate(origin);
       } else {
-        setError("Bạn không phải Admin, không thể vào đây!");
+        setError("Tài khoản không hợp lệ!");
       }
     } catch (err) {
       setError(err.message);
@@ -60,7 +71,7 @@ function Basic() {
           textAlign="center"
         >
           <MDTypography variant="h4" fontWeight="medium" color="white" mt={1}>
-            Đăng Nhập Admin
+            Đăng Nhập
           </MDTypography>
         </MDBox>
         <MDBox pt={4} pb={3} px={3}>

@@ -1,11 +1,20 @@
 import React from 'react';
-import { ShoppingCart, Search, User } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useCart } from '../../context/CartContext'; // Import hook giỏ hàng
+import { ShoppingCart, Search, User, LogOut } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext'; // IMPORT AUTH CONTEXT
 
 const Navbar = () => {
-    // Lấy tổng số lượng sản phẩm từ Context
-    const { totalItems } = useCart();
+    
+    const { totalItems,clearCartState } = useCart();
+    const { currentUser, logoutUser } = useAuth(); // LẤY USER HIỆN TẠI VÀ HÀM LOGOUT
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logoutUser(); // Xóa thông tin User
+        clearCartState();  // 2. Gọi hàm dọn sạch giỏ hàng
+        navigate('/'); // Đẩy về trang chủ
+    };
 
     return (
         <nav className="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b border-gray-100 shadow-sm transition-all duration-300">
@@ -34,19 +43,37 @@ const Navbar = () => {
                     </div>
 
                     {/* Icons */}
-                    <div className="flex items-center space-x-8">
-                        <button className="flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-colors">
-                            <div className="p-2 bg-gray-50 rounded-full"><User size={20} /></div>
-                            <span className="text-sm font-bold hidden sm:block">Đăng nhập</span>
-                        </button>
+                    <div className="flex items-center space-x-6 md:space-x-8">
 
-                        {/* Nút Giỏ Hàng có bọc Link sang trang /cart */}
+                        {/* KIỂM TRA ĐĂNG NHẬP Ở ĐÂY */}
+                        {currentUser ? (
+                            // Đã đăng nhập: Hiện tên và nút Đăng xuất
+                            <div className="flex items-center space-x-4">
+                                <div className="flex items-center space-x-2 text-gray-600">
+                                    <div className="p-2 bg-emerald-50 text-emerald-600 rounded-full"><User size={20} /></div>
+                                    <span className="text-sm font-bold hidden sm:block truncate max-w-[100px]">
+                                        Chào, {currentUser.userName}
+                                    </span>
+                                </div>
+                                <button onClick={handleLogout} className="text-gray-400 hover:text-red-600 transition-colors" title="Đăng xuất">
+                                    <LogOut size={20} />
+                                </button>
+                            </div>
+                        ) : (
+                            // Chưa đăng nhập: Hiện nút bọc Link sang trang Sign-in
+                            <Link to="/authentication/sign-in">
+                                <button className="flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-colors">
+                                    <div className="p-2 bg-gray-50 rounded-full"><User size={20} /></div>
+                                    <span className="text-sm font-bold hidden sm:block">Đăng nhập</span>
+                                </button>
+                            </Link>
+                        )}
+
                         <Link to="/cart">
                             <button className="flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-colors relative group">
                                 <div className="p-2 bg-blue-50 text-blue-600 rounded-full group-hover:bg-blue-600 group-hover:text-white transition-all">
                                     <ShoppingCart size={20} />
                                 </div>
-                                {/* Chỉ hiện vòng đỏ nếu có sản phẩm */}
                                 {totalItems > 0 && (
                                     <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full h-5 w-5 border-2 border-white flex items-center justify-center shadow-sm">
                                         {totalItems}

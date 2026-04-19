@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+
 import ProductCard from '../components/ProductCard';
 import { getAllProducts } from 'services/ProductService';
 
@@ -69,8 +71,8 @@ const Home = () => {
                                 key={index}
                                 onClick={() => setActiveCategory(cat)}
                                 className={`px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all ${activeCategory === cat
-                                        ? 'bg-gray-900 text-white shadow-md'
-                                        : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-900 hover:text-gray-900'
+                                    ? 'bg-gray-900 text-white shadow-md'
+                                    : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-900 hover:text-gray-900'
                                     }`}
                             >
                                 {cat}
@@ -92,6 +94,7 @@ const Home = () => {
                     </div>
                 )}
             </div>
+            <Footer />
         </div>
     );
 };

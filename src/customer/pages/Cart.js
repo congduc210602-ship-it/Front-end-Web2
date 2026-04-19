@@ -1,19 +1,31 @@
 import React, { useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext'; // 1. THÊM AUTH CONTEXT
 import Navbar from '../components/Navbar';
 import { Trash2, Minus, Plus, ArrowLeft, CreditCard, ShieldCheck } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom'; // 2. THÊM HOOKS ĐIỀU HƯỚNG
 
 const Cart = () => {
     const { cartItems, removeFromCart, updateQuantity } = useCart();
+    const { currentUser } = useAuth(); // 3. LẤY TRẠNG THÁI USER
 
-    // Tính tổng tiền dựa trên số lượng và giá sản phẩm
+    const navigate = useNavigate();
+    const location = useLocation();
     const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-    // Cuộn lên đầu trang khi vào giỏ hàng
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
+
+    // 4. HÀM XỬ LÝ KHI BẤM THANH TOÁN
+    const handleCheckout = () => {
+        if (!currentUser) {
+            alert("Bạn cần đăng nhập để tiến hành thanh toán!");
+            navigate('/authentication/sign-in', { state: { from: location } });
+        } else {
+            navigate('/checkout');
+        }
+    };
 
     return (
         <div className="bg-[#f8fafc] min-h-screen pb-20 font-sans">
@@ -29,7 +41,7 @@ const Cart = () => {
                     )}
                 </div>
 
-                {/* Kiểm tra nếu giỏ hàng trống */}
+
                 {cartItems.length === 0 ? (
                     <div className="bg-white rounded-3xl p-16 md:p-24 text-center shadow-sm border border-gray-100 flex flex-col items-center">
                         <div className="bg-gray-50 w-32 h-32 rounded-full flex items-center justify-center mb-8 border-4 border-gray-100">
@@ -43,7 +55,7 @@ const Cart = () => {
                     </div>
                 ) : (
                     <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
-                        {/* === CỘT TRÁI: DANH SÁCH SẢN PHẨM === */}
+                        {/* Cột trái: DS Sản phẩm */}
                         <div className="w-full lg:w-2/3 space-y-4">
                             {cartItems.map(item => {
                                 const imageUrl = item.imageUrl || 'https://placehold.co/150x150?text=No+Image';
@@ -51,12 +63,12 @@ const Cart = () => {
                                 return (
                                     <div key={item.id} className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex flex-col sm:flex-row items-start sm:items-center gap-6 hover:shadow-md transition-shadow">
 
-                                        {/* Hình ảnh */}
+
                                         <div className="w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 bg-gray-50 rounded-2xl p-2 flex items-center justify-center">
                                             <img src={imageUrl} className="w-full h-full object-contain mix-blend-multiply" alt={item.productName} />
                                         </div>
 
-                                        {/* Thông tin */}
+
                                         <div className="flex-grow w-full">
                                             <p className="text-xs text-blue-600 font-bold uppercase tracking-wider mb-1">{item.category}</p>
                                             <h3 className="font-bold text-gray-900 text-lg mb-2 line-clamp-1">{item.productName}</h3>
@@ -65,30 +77,15 @@ const Cart = () => {
                                             </p>
                                         </div>
 
-                                        {/* Cụm Nút Tương Tác (Số lượng & Xóa) */}
-                                        <div className="flex items-center justify-between w-full sm:w-auto gap-6 sm:flex-col sm:items-end sm:gap-4 mt-4 sm:mt-0">
-                                            {/* Bộ đếm số lượng */}
-                                            <div className="flex items-center bg-gray-50 rounded-full border border-gray-200 p-1">
-                                                <button
-                                                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white hover:shadow-sm text-gray-600 transition-all"
-                                                >
-                                                    <Minus size={14} />
-                                                </button>
-                                                <span className="w-8 text-center font-bold text-sm text-gray-900">{item.quantity}</span>
-                                                <button
-                                                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white hover:shadow-sm text-gray-600 transition-all"
-                                                >
-                                                    <Plus size={14} />
-                                                </button>
-                                            </div>
 
-                                            {/* Nút Xóa */}
-                                            <button
-                                                onClick={() => removeFromCart(item.id)}
-                                                className="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-full transition-all flex items-center text-sm font-semibold"
-                                            >
+                                        <div className="flex items-center justify-between w-full sm:w-auto gap-6 sm:flex-col sm:items-end sm:gap-4 mt-4 sm:mt-0">
+
+                                            <div className="flex items-center bg-gray-50 rounded-full border border-gray-200 p-1">
+                                                <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white hover:shadow-sm text-gray-600 transition-all"><Minus size={14} /></button>
+                                                <span className="w-8 text-center font-bold text-sm text-gray-900">{item.quantity}</span>
+                                                <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white hover:shadow-sm text-gray-600 transition-all"><Plus size={14} /></button>
+                                            </div>
+                                            <button onClick={() => removeFromCart(item.id)} className="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-full transition-all flex items-center text-sm font-semibold">
                                                 <Trash2 size={18} className="sm:mr-0 mr-1" /> <span className="sm:hidden block">Xóa</span>
                                             </button>
                                         </div>
@@ -97,7 +94,7 @@ const Cart = () => {
                             })}
                         </div>
 
-                        {/* === CỘT PHẢI: BẢNG TỔNG TIỀN === */}
+                        {/* Cột phải: Tổng tiền */}
                         <div className="w-full lg:w-1/3">
                             <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 sticky top-28">
                                 <h3 className="text-xl font-black text-gray-900 mb-6">Tóm tắt đơn hàng</h3>
@@ -120,7 +117,11 @@ const Cart = () => {
                                     </span>
                                 </div>
 
-                                <button className="w-full bg-gray-900 text-white py-4 px-6 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-blue-600 hover:shadow-lg transition-all mb-4">
+                                {/* 5. GẮN SỰ KIỆN onClick VÀO NÚT NÀY */}
+                                <button
+                                    onClick={handleCheckout}
+                                    className="w-full bg-gray-900 text-white py-4 px-6 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-blue-600 hover:shadow-lg transition-all mb-4"
+                                >
                                     <CreditCard size={20} /> Tiến Hành Thanh Toán
                                 </button>
 

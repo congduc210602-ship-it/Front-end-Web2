@@ -14,6 +14,7 @@ import brandDark from "assets/images/logo-ct-dark.png";
 import Home from "customer/pages/Home";
 import ProductDetail from "customer/pages/ProductDetail";
 import Cart from "customer/pages/Cart";
+import Checkout from "customer/pages/Checkout";
 
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
@@ -22,10 +23,11 @@ export default function App() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  const isAuthenticated = localStorage.getItem("user");
+  // 1. LẤY VÀ PARSE THÔNG TIN USER TỪ LOCALSTORAGE
+  const userString = localStorage.getItem("user");
+  const user = userString ? JSON.parse(userString) : null;
 
-  // Kiểm tra xem có đang ở trang admin hay không
-  const isAdminPath = pathname.startsWith("/admin");
+  const isAdminPath = pathname.startsWith("/admin") || routes.some(r => r.route === pathname);
 
   useEffect(() => {
     // Nếu vào /admin khơi khơi thì đẩy vào dashboard
@@ -33,11 +35,19 @@ export default function App() {
       navigate("/admin/dashboard");
     }
 
-    // Bảo vệ các trang Admin: Chưa login mà vào /admin/* thì đá về Sign-in
-    if (isAdminPath && !isAuthenticated) {
-      navigate("/authentication/sign-in");
+    // 2. LOGIC BẢO VỆ TRANG ADMIN:
+    // Nếu đường dẫn là Admin Path (bắt đầu bằng /admin hoặc có trong routes.js)
+    if (isAdminPath) {
+      if (!user) {
+        // Trường hợp 1: Chưa đăng nhập -> Đá về Sign-in
+        navigate("/authentication/sign-in");
+      } else if (user.role !== "ADMIN") {
+        // Trường hợp 2: Đã đăng nhập nhưng KHÔNG PHẢI ADMIN -> Đá về trang chủ khách
+        alert("Bạn không có quyền truy cập vào khu vực Admin!");
+        navigate("/");
+      }
     }
-  }, [pathname, isAuthenticated, isAdminPath, navigate]);
+  }, [pathname, user, isAdminPath, navigate]);
 
   const handleOnMouseEnter = () => {
     if (miniSidenav && !onMouseEnter) {
@@ -64,8 +74,8 @@ export default function App() {
     <ThemeProvider theme={darkMode ? themeDark : theme}>
       <CssBaseline />
 
-      {/* CHỈ HIỂN THỊ SIDENAV KHI LÀ ADMIN PATH */}
-      {isAdminPath && (
+      {/* CHỈ HIỂN THỊ SIDENAV KHI LÀ ADMIN PATH VÀ LÀ ADMIN THẬT */}
+      {isAdminPath && user?.role === "ADMIN" && (
         <Sidenav
           color={sidenavColor}
           brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
@@ -77,19 +87,15 @@ export default function App() {
       )}
 
       <Routes>
-        {/* 1. TRANG KHÁCH HÀNG (MẶC ĐỊNH) */}
+        {/* TRANG KHÁCH HÀNG */}
         <Route path="/" element={<Home />} />
-
-        {/* 2. TRANG CHI TIẾT SẢN PHẨM */}
         <Route path="/product/:id" element={<ProductDetail />} />
-
-        {/* 3. TRANG GIỎ HÀNG */}
         <Route path="/cart" element={<Cart />} />
-
-        {/* 4. CÁC ROUTE ADMIN TỪ FILE ROUTES.JS */}
+        <Route path="/checkout" element={<Checkout />} />
+        {/* CÁC ROUTE ADMIN TỪ FILE ROUTES.JS */}
         {getRoutes(routes)}
 
-        {/* 5. ĐIỀU HƯỚNG SAI SẼ VỀ TRANG CHỦ KHÁCH HÀNG */}
+        {/* ĐIỀU HƯỚNG SAI SẼ VỀ TRANG CHỦ KHÁCH HÀNG */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </ThemeProvider>
