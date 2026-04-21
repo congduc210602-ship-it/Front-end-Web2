@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import PropTypes from 'prop-types'; // 1. Import thêm PropTypes
+import PropTypes from 'prop-types';
 
 const AuthContext = createContext();
 
@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
         return savedUser ? JSON.parse(savedUser) : null;
     });
 
-    // Khi có thay đổi user, lưu lại vào LocalStorage
+    
     useEffect(() => {
         if (currentUser) {
             localStorage.setItem('user', JSON.stringify(currentUser));
@@ -30,16 +30,24 @@ export const AuthProvider = ({ children }) => {
             if (!response.ok) throw new Error("Sai tài khoản hoặc mật khẩu!");
 
             const data = await response.json();
-            setCurrentUser(data); // Lưu thông tin người dùng (gồm cả token và role)
-            return data; // Trả về data để component gọi biết kết quả
+
+            // --- FIX LỖI ĐĂNG NHẬP 2 LẦN Ở ĐÂY ---
+            // Lưu ngay lập tức vào localStorage để App.js kịp đọc được khi bị redirect
+            localStorage.setItem('user', JSON.stringify(data));
+            // ------------------------------------
+
+            setCurrentUser(data); // Cập nhật state
+            return data;
         } catch (error) {
             throw error;
         }
     };
 
     const logoutUser = () => {
+        // --- FIX LỖI Ở ĐÂY LUÔN CHO CHẮC ---
+        localStorage.removeItem('user'); // Xóa ngay lập tức khi đăng xuất
+        // -----------------------------------
         setCurrentUser(null);
-        localStorage.removeItem('user');
     };
 
     return (
@@ -49,7 +57,7 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
-// 2. Thêm đoạn này để dập tắt lỗi ESLint
+
 AuthProvider.propTypes = {
     children: PropTypes.node.isRequired,
 };

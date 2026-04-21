@@ -1,23 +1,45 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useCart } from '../../context/CartContext';
-import { useAuth } from '../../context/AuthContext'; // 1. THÊM AUTH CONTEXT
+import { useAuth } from '../../context/AuthContext';
 import Navbar from '../components/Navbar';
-import { Trash2, Minus, Plus, ArrowLeft, CreditCard, ShieldCheck } from 'lucide-react';
-import { Link, useNavigate, useLocation } from 'react-router-dom'; // 2. THÊM HOOKS ĐIỀU HƯỚNG
+import { Trash2, Minus, Plus, ArrowLeft, CreditCard, ShieldCheck, CheckCircle, XCircle } from 'lucide-react'; // Import thêm icon CheckCircle, XCircle
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 const Cart = () => {
-    const { cartItems, removeFromCart, updateQuantity } = useCart();
-    const { currentUser } = useAuth(); // 3. LẤY TRẠNG THÁI USER
+    // 1. Nhớ gọi thêm clearCartState ra để dùng khi thanh toán thành công
+    const { cartItems, removeFromCart, updateQuantity, clearCartState } = useCart();
+    const { currentUser } = useAuth();
 
     const navigate = useNavigate();
     const location = useLocation();
     const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
+    // 2. Tạo State để lưu thông báo thanh toán
+    const [paymentMessage, setPaymentMessage] = useState(null);
+
     useEffect(() => {
         window.scrollTo(0, 0);
-    }, []);
 
-    // 4. HÀM XỬ LÝ KHI BẤM THANH TOÁN
+        // --- ĐOẠN LOGIC HỨNG KẾT QUẢ TỪ VNPAY ---
+        const searchParams = new URLSearchParams(location.search);
+        const status = searchParams.get('payment_status');
+
+        if (status) {
+            if (status === 'success') {
+                setPaymentMessage({ type: 'success', text: 'Thanh toán thành công! Cảm ơn bạn đã mua sắm tại Perfume.' });
+                clearCartState(); // Xóa giỏ hàng chỉ khi thành công
+            } else if (status === 'failed') {
+                setPaymentMessage({ type: 'error', text: 'Thanh toán thất bại hoặc giao dịch đã bị hủy!!!' });
+            } else if (status === 'invalid') {
+                setPaymentMessage({ type: 'error', text: 'Lỗi: Giao dịch không hợp lệ hoặc có dấu hiệu can thiệp!' });
+            }
+
+            // Dọn dẹp URL cho sạch sẽ (xóa biến ?payment_status đi)
+            navigate('/cart', { replace: true });
+        }
+        // ----------------------------------------
+    }, [location.search, navigate, clearCartState]);
+
     const handleCheckout = () => {
         if (!currentUser) {
             alert("Bạn cần đăng nhập để tiến hành thanh toán!");
@@ -32,6 +54,15 @@ const Cart = () => {
             <Navbar />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+                {/* HIỂN THỊ THÔNG BÁO THANH TOÁN (NẾU CÓ) */}
+                {paymentMessage && (
+                    <div className={`mb-8 p-4 rounded-2xl flex items-center gap-3 border ${paymentMessage.type === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-red-50 border-red-100 text-red-700'}`}>
+                        {paymentMessage.type === 'success' ? <CheckCircle size={24} /> : <XCircle size={24} />}
+                        <span className="font-bold">{paymentMessage.text}</span>
+                    </div>
+                )}
+
                 <div className="flex items-center gap-3 mb-10">
                     <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">Giỏ hàng của bạn</h1>
                     {cartItems.length > 0 && (
@@ -40,7 +71,6 @@ const Cart = () => {
                         </span>
                     )}
                 </div>
-
 
                 {cartItems.length === 0 ? (
                     <div className="bg-white rounded-3xl p-16 md:p-24 text-center shadow-sm border border-gray-100 flex flex-col items-center">
@@ -63,11 +93,9 @@ const Cart = () => {
                                 return (
                                     <div key={item.id} className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex flex-col sm:flex-row items-start sm:items-center gap-6 hover:shadow-md transition-shadow">
 
-
                                         <div className="w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 bg-gray-50 rounded-2xl p-2 flex items-center justify-center">
                                             <img src={imageUrl} className="w-full h-full object-contain mix-blend-multiply" alt={item.productName} />
                                         </div>
-
 
                                         <div className="flex-grow w-full">
                                             <p className="text-xs text-blue-600 font-bold uppercase tracking-wider mb-1">{item.category}</p>
@@ -76,7 +104,6 @@ const Cart = () => {
                                                 {item.price.toLocaleString('vi-VN')} <span className="text-sm underline text-gray-500">đ</span>
                                             </p>
                                         </div>
-
 
                                         <div className="flex items-center justify-between w-full sm:w-auto gap-6 sm:flex-col sm:items-end sm:gap-4 mt-4 sm:mt-0">
 
@@ -117,7 +144,6 @@ const Cart = () => {
                                     </span>
                                 </div>
 
-                                {/* 5. GẮN SỰ KIỆN onClick VÀO NÚT NÀY */}
                                 <button
                                     onClick={handleCheckout}
                                     className="w-full bg-gray-900 text-white py-4 px-6 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-blue-600 hover:shadow-lg transition-all mb-4"

@@ -2,18 +2,18 @@ import React from 'react';
 import { ShoppingCart, Search, User, LogOut } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
-import { useAuth } from '../../context/AuthContext'; // IMPORT AUTH CONTEXT
+import { useAuth } from '../../context/AuthContext';
 
 const Navbar = () => {
-    
-    const { totalItems,clearCartState } = useCart();
-    const { currentUser, logoutUser } = useAuth(); // LẤY USER HIỆN TẠI VÀ HÀM LOGOUT
+
+    const { totalItems, clearCartState } = useCart();
+    const { currentUser, logoutUser } = useAuth();
     const navigate = useNavigate();
 
     const handleLogout = () => {
-        logoutUser(); // Xóa thông tin User
-        clearCartState();  // 2. Gọi hàm dọn sạch giỏ hàng
-        navigate('/'); // Đẩy về trang chủ
+        logoutUser();
+        clearCartState();
+        navigate('/');
     };
 
     return (
@@ -49,12 +49,17 @@ const Navbar = () => {
                         {currentUser ? (
                             // Đã đăng nhập: Hiện tên và nút Đăng xuất
                             <div className="flex items-center space-x-4">
-                                <div className="flex items-center space-x-2 text-gray-600">
-                                    <div className="p-2 bg-emerald-50 text-emerald-600 rounded-full"><User size={20} /></div>
+
+                                {/* BỌC LINK VÀO ĐÂY ĐỂ CLICK ĐƯỢC CHUYỂN ĐẾN TRANG PROFILE */}
+                                <Link to="/my-profile" className="flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-colors group cursor-pointer title='Xem thông tin cá nhân'">
+                                    <div className="p-2 bg-emerald-50 text-emerald-600 rounded-full group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                                        <User size={20} />
+                                    </div>
                                     <span className="text-sm font-bold hidden sm:block truncate max-w-[100px]">
                                         Chào, {currentUser.userName}
                                     </span>
-                                </div>
+                                </Link>
+
                                 <button onClick={handleLogout} className="text-gray-400 hover:text-red-600 transition-colors" title="Đăng xuất">
                                     <LogOut size={20} />
                                 </button>

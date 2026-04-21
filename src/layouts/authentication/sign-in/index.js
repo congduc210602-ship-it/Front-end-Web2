@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom"; // THÊM useLocation
+import { useNavigate, useLocation, Link } from "react-router-dom"; // BỔ SUNG Link VÀO ĐÂY
 
 // @mui material components
 import Card from "@mui/material/Card";
@@ -18,7 +18,7 @@ import BasicLayout from "layouts/authentication/components/BasicLayout";
 import bgImage from "assets/images/bg-sign-in-basic.jpeg";
 
 // API Service và Context
-import { useAuth } from "context/AuthContext"; // SỬ DỤNG AuthContext
+import { useAuth } from "context/AuthContext";
 
 function Basic() {
   const [rememberMe, setRememberMe] = useState(false);
@@ -27,8 +27,8 @@ function Basic() {
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
-  const location = useLocation(); // LẤY ĐƯỜNG DẪN TRƯỚC ĐÓ
-  const { loginUser } = useAuth(); // LẤY HÀM LOGIN TỪ CONTEXT
+  const location = useLocation();
+  const { loginUser } = useAuth();
 
   const handleSetRememberMe = () => setRememberMe(!rememberMe);
 
@@ -36,16 +36,13 @@ function Basic() {
     e.preventDefault();
     setError("");
     try {
-      // 1. Gọi hàm login từ AuthContext thay vì gọi trực tiếp AuthService
       const user = await loginUser(userName, userPassword);
 
-      // 2. Xử lý chuyển hướng dựa trên Role
       if (user && user.role === "ADMIN") {
         alert("Chào mừng Admin quay trở lại!");
-        navigate("/dashboard");
+        navigate("/admin/dashboard"); // Sửa lại route Admin cho chuẩn nếu cần
       } else if (user && user.role === "USER") {
         alert("Đăng nhập thành công!");
-        // Nếu người dùng bị bắt đăng nhập từ trang giỏ hàng, trả họ về giỏ hàng. Nếu không thì về trang chủ.
         const origin = location.state?.from?.pathname || "/";
         navigate(origin);
       } else {
@@ -120,6 +117,31 @@ function Basic() {
                 Đăng Nhập
               </MDButton>
             </MDBox>
+
+            {/* THÊM ĐOẠN CODE NÀY ĐỂ HIỂN THỊ NÚT ĐĂNG KÝ */}
+            <MDBox mt={3} mb={1} textAlign="center">
+              <MDTypography variant="button" color="text">
+                Bạn chưa có tài khoản?{" "}
+                <MDTypography
+                  component={Link}
+                  to="/authentication/sign-up"
+                  variant="button"
+                  color="info"
+                  fontWeight="medium"
+                  textGradient
+                >
+                  Đăng ký ngay
+                </MDTypography>
+                <MDBox mt={2} textAlign="center">
+                  <MDTypography component={Link} to="/authentication/forgot-password" variant="button" color="info" fontWeight="medium" textGradient>
+                    Quên mật khẩu?
+                  </MDTypography>
+                </MDBox>
+                
+              </MDTypography>
+            </MDBox>
+            {/* KẾT THÚC ĐOẠN THÊM */}
+
           </MDBox>
         </MDBox>
       </Card>

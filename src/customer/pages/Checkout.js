@@ -56,16 +56,15 @@ const Checkout = () => {
 
             // 1. LƯU ĐƠN HÀNG VÀO DATABASE TRƯỚC
             const savedOrder = await createOrder(actualUserId, newOrder);
-            clearCartState();
 
             // 2. XỬ LÝ THEO PHƯƠNG THỨC THANH TOÁN
             if (paymentMethod === 'VNPAY') {
-                // Gọi API lấy Link VNPay (truyền ID đơn hàng vừa tạo)
+                // CHỈ CHUYỂN HƯỚNG, KHÔNG XÓA GIỎ HÀNG Ở ĐÂY
                 const paymentUrl = await createVNPayPayment(totalPrice, savedOrder.id);
-                // Chuyển hướng người dùng sang trang của VNPay
                 window.location.href = paymentUrl;
             } else {
-                // Nếu là COD, hiện màn hình thành công luôn
+                // Nếu là COD, thanh toán thành công luôn -> Mới được xóa giỏ hàng
+                clearCartState();
                 setOrderSuccess(true);
             }
 

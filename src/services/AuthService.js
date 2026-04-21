@@ -36,3 +36,54 @@ export const logout = () => {
 export const getCurrentUser = () => {
     return JSON.parse(localStorage.getItem("user"));
 };
+
+
+export const registerUser = async (userName, email, password) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/registration`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                userName: userName,
+                userPassword: password,
+                active: 1,
+                userDetails: {
+                    email: email,
+                    // THÊM 2 DÒNG NÀY ĐỂ TRÁNH LỖI NOT NULL Ở DATABASE
+                    firstName: "Khách",
+                    lastName: "Hàng"
+                }
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Đăng ký thất bại. Tên đăng nhập có thể đã tồn tại!");
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Lỗi đăng ký:", error);
+        throw error;
+    }
+};
+
+// API: Gửi yêu cầu khôi phục mật khẩu (nhập email)
+export const forgotPassword = async (email) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/forgot-password?email=${encodeURIComponent(email)}`, {
+            method: "POST",
+        });
+
+        const data = await response.text(); // Đọc dạng text vì backend trả về chuỗi
+        if (!response.ok) {
+            throw new Error(data || "Lỗi khi gửi yêu cầu khôi phục mật khẩu.");
+        }
+        return data;
+    } catch (error) {
+        console.error("Lỗi forgotPassword:", error);
+        throw error;
+    }
+};
+

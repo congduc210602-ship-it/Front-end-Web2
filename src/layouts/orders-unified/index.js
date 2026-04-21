@@ -15,6 +15,7 @@ import Divider from "@mui/material/Divider";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
+import MDBadge from "components/MDBadge";
 
 // Layout components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -76,11 +77,19 @@ function OrdersUnified() {
         }
     };
 
+    // Hàm chuyển đổi màu Chip cho Phương thức thanh toán
+    const getPaymentColor = (paymentMethod) => {
+        if (paymentMethod === "VNPAY") return "info";
+        if (paymentMethod === "COD") return "success";
+        return "secondary";
+    };
+
     // Cấu hình bảng
     const columns = [
         { Header: "Mã Đơn", accessor: "id", width: "10%", align: "center" },
         { Header: "Khách Hàng", accessor: "customer", align: "left" },
         { Header: "Ngày Đặt", accessor: "date", align: "center" },
+        { Header: "Thanh Toán", accessor: "payment", align: "center" },
         { Header: "Tổng Tiền", accessor: "total", align: "right" },
         { Header: "Trạng Thái", accessor: "status", align: "center" },
         { Header: "Hành Động", accessor: "action", align: "center" },
@@ -90,6 +99,17 @@ function OrdersUnified() {
         id: <MDTypography variant="caption" fontWeight="bold">#{order.id}</MDTypography>,
         customer: <MDTypography variant="caption" fontWeight="medium">{order.user?.userName || "Khách vãng lai"}</MDTypography>,
         date: <MDTypography variant="caption">{order.orderedDate}</MDTypography>,
+        // Map dữ liệu paymentMethod vào cột Thanh Toán
+        payment: (
+            <MDBox ml={-1}>
+                <Chip
+                    label={order.paymentMethod ? order.paymentMethod : "Tiền mặt (COD)"} // Hiển thị "Tiền mặt (COD)" nếu paymentMethod là null
+                    color={getPaymentColor(order.paymentMethod)}
+                    size="small"
+                    variant="outlined"
+                />
+            </MDBox>
+        ),
         total: <MDTypography variant="button" fontWeight="medium">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.total)}</MDTypography>,
         status: (
             <MDBox ml={-1}>
@@ -131,6 +151,9 @@ function OrdersUnified() {
                             <MDTypography variant="h6" fontWeight="medium">Thông tin khách hàng</MDTypography>
                             <MDTypography variant="caption" display="block">Tài khoản: {currentOrder?.user?.userName}</MDTypography>
                             <MDTypography variant="caption" display="block">Ngày đặt: {currentOrder?.orderedDate}</MDTypography>
+                            <MDTypography variant="caption" display="block">
+                                Phương thức thanh toán: <span style={{ fontWeight: 'bold' }}>{currentOrder?.paymentMethod || "Chưa rõ"}</span>
+                            </MDTypography>
 
                             <Divider sx={{ my: 2 }} />
 

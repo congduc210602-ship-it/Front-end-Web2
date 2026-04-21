@@ -1,24 +1,9 @@
-/**
-=========================================================
-* Material Dashboard 2 React - v2.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
-// react-router-dom components
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 // @mui material components
 import Card from "@mui/material/Card";
-import Checkbox from "@mui/material/Checkbox";
+
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -32,7 +17,61 @@ import CoverLayout from "layouts/authentication/components/CoverLayout";
 // Images
 import bgImage from "assets/images/bg-sign-up-cover.jpeg";
 
+// API
+import { registerUser } from "../../../services/AuthService"; // Import hàm vừa tạo
+
 function Cover() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    userName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    // Validate cơ bản
+    if (!formData.userName || !formData.email || !formData.password) {
+      setError("Vui lòng điền đầy đủ thông tin!");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Mật khẩu xác nhận không khớp!");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await registerUser(formData.userName, formData.email, formData.password);
+      setSuccess("Đăng ký thành công! Đang chuyển hướng...");
+
+      // Đăng ký xong thì delay 2s rồi đẩy về trang Đăng nhập
+      setTimeout(() => {
+        navigate("/authentication/sign-in");
+      }, 2000);
+
+    } catch (err) {
+      setError(err.message || "Có lỗi xảy ra khi đăng ký.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <CoverLayout image={bgImage}>
       <Card>
@@ -48,52 +87,77 @@ function Cover() {
           textAlign="center"
         >
           <MDTypography variant="h4" fontWeight="medium" color="white" mt={1}>
-            Join us today
+            Đăng Ký Tài Khoản
           </MDTypography>
           <MDTypography display="block" variant="button" color="white" my={1}>
-            Enter your email and password to register
+            Tạo tài khoản để mua sắm tại Perfume
           </MDTypography>
         </MDBox>
         <MDBox pt={4} pb={3} px={3}>
-          <MDBox component="form" role="form">
-            <MDBox mb={2}>
-              <MDInput type="text" label="Name" variant="standard" fullWidth />
+          <MDBox component="form" role="form" onSubmit={handleRegister}>
+
+            {/* Hiển thị lỗi hoặc thành công */}
+            {error && <MDTypography variant="caption" color="error" fontWeight="bold">{error}</MDTypography>}
+            {success && <MDTypography variant="caption" color="success" fontWeight="bold">{success}</MDTypography>}
+
+            <MDBox mb={2} mt={2}>
+              <MDInput
+                type="text"
+                label="Tên đăng nhập"
+                variant="standard"
+                fullWidth
+                name="userName"
+                value={formData.userName}
+                onChange={handleInputChange}
+                required
+              />
             </MDBox>
             <MDBox mb={2}>
-              <MDInput type="email" label="Email" variant="standard" fullWidth />
+              <MDInput
+                type="email"
+                label="Email"
+                variant="standard"
+                fullWidth
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+              />
             </MDBox>
             <MDBox mb={2}>
-              <MDInput type="password" label="Password" variant="standard" fullWidth />
+              <MDInput
+                type="password"
+                label="Mật khẩu"
+                variant="standard"
+                fullWidth
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                required
+              />
             </MDBox>
-            <MDBox display="flex" alignItems="center" ml={-1}>
-              <Checkbox />
-              <MDTypography
-                variant="button"
-                fontWeight="regular"
-                color="text"
-                sx={{ cursor: "pointer", userSelect: "none", ml: -1 }}
-              >
-                &nbsp;&nbsp;I agree the&nbsp;
-              </MDTypography>
-              <MDTypography
-                component="a"
-                href="#"
-                variant="button"
-                fontWeight="bold"
-                color="info"
-                textGradient
-              >
-                Terms and Conditions
-              </MDTypography>
+            <MDBox mb={2}>
+              <MDInput
+                type="password"
+                label="Xác nhận mật khẩu"
+                variant="standard"
+                fullWidth
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                required
+              />
             </MDBox>
+
             <MDBox mt={4} mb={1}>
-              <MDButton variant="gradient" color="info" fullWidth>
-                sign in
+              <MDButton variant="gradient" color="info" fullWidth type="submit" disabled={isLoading}>
+                {isLoading ? "Đang xử lý..." : "Đăng Ký"}
               </MDButton>
             </MDBox>
+
             <MDBox mt={3} mb={1} textAlign="center">
               <MDTypography variant="button" color="text">
-                Already have an account?{" "}
+                Bạn đã có tài khoản?{" "}
                 <MDTypography
                   component={Link}
                   to="/authentication/sign-in"
@@ -102,7 +166,7 @@ function Cover() {
                   fontWeight="medium"
                   textGradient
                 >
-                  Sign In
+                  Đăng nhập
                 </MDTypography>
               </MDTypography>
             </MDBox>

@@ -15,6 +15,10 @@ import Home from "customer/pages/Home";
 import ProductDetail from "customer/pages/ProductDetail";
 import Cart from "customer/pages/Cart";
 import Checkout from "customer/pages/Checkout";
+import CustomerProfile from "customer/pages/Profile";
+import ForgotPassword from "layouts/authentication/forgot-password";
+
+
 
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
@@ -28,6 +32,7 @@ export default function App() {
   const user = userString ? JSON.parse(userString) : null;
 
   const isAdminPath = pathname.startsWith("/admin") || routes.some(r => r.route === pathname);
+  const isAuthPath = pathname.includes("/authentication"); // Xác định trang đăng nhập/đăng ký
 
   useEffect(() => {
     // Nếu vào /admin khơi khơi thì đẩy vào dashboard
@@ -36,18 +41,17 @@ export default function App() {
     }
 
     // 2. LOGIC BẢO VỆ TRANG ADMIN:
-    // Nếu đường dẫn là Admin Path (bắt đầu bằng /admin hoặc có trong routes.js)
-    if (isAdminPath) {
+    if (isAdminPath && !isAuthPath) {
       if (!user) {
-        // Trường hợp 1: Chưa đăng nhập -> Đá về Sign-in
+        // Chưa đăng nhập -> Đá về Sign-in
         navigate("/authentication/sign-in");
       } else if (user.role !== "ADMIN") {
-        // Trường hợp 2: Đã đăng nhập nhưng KHÔNG PHẢI ADMIN -> Đá về trang chủ khách
+        // Đã đăng nhập nhưng KHÔNG PHẢI ADMIN -> Đá về trang chủ khách
         alert("Bạn không có quyền truy cập vào khu vực Admin!");
         navigate("/");
       }
     }
-  }, [pathname, user, isAdminPath, navigate]);
+  }, [pathname, user, isAdminPath, isAuthPath, navigate]);
 
   const handleOnMouseEnter = () => {
     if (miniSidenav && !onMouseEnter) {
@@ -75,7 +79,7 @@ export default function App() {
       <CssBaseline />
 
       {/* CHỈ HIỂN THỊ SIDENAV KHI LÀ ADMIN PATH VÀ LÀ ADMIN THẬT */}
-      {isAdminPath && user?.role === "ADMIN" && (
+      {isAdminPath && user?.role === "ADMIN" && !isAuthPath && (
         <Sidenav
           color={sidenavColor}
           brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
@@ -92,6 +96,10 @@ export default function App() {
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
+        <Route path="/authentication/forgot-password" element={<ForgotPassword />} />
+        {/* ĐƯỜNG DẪN MỚI DÀNH CHO PROFILE KHÁCH HÀNG */}
+        <Route path="/my-profile" element={<CustomerProfile />} />
+
         {/* CÁC ROUTE ADMIN TỪ FILE ROUTES.JS */}
         {getRoutes(routes)}
 

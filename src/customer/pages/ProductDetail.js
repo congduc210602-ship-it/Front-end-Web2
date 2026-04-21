@@ -5,11 +5,11 @@ import Footer from '../components/Footer';
 
 import ProductCard from '../components/ProductCard';
 import { getProductById, getAllProducts } from 'services/ProductService';
-import { getReviewsByProductName, saveReview } from 'services/ReviewService'; // IMPORT REVIEW SERVICE
+import { getReviewsByProductName, saveReview } from 'services/ReviewService';
 import { ShoppingBag, Heart, ShieldCheck, Truck, ArrowLeft, Minus, Plus, Star, Send } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
-import { useAuth } from '../../context/AuthContext'; // ĐỂ KIỂM TRA ĐĂNG NHẬP
-import Rating from "@mui/material/Rating"; // DÙNG CHUNG THƯ VIỆN SAO VỚI ADMIN
+import { useAuth } from '../../context/AuthContext';
+import Rating from "@mui/material/Rating";
 
 const ProductDetail = () => {
     const { id } = useParams();
@@ -18,11 +18,10 @@ const ProductDetail = () => {
 
     const [product, setProduct] = useState(null);
     const [relatedProducts, setRelatedProducts] = useState([]);
-    const [reviews, setReviews] = useState([]); // STATE LƯU ĐÁNH GIÁ
+    const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [quantity, setQuantity] = useState(1);
 
-    // State cho Form Đánh giá
     const [userRating, setUserRating] = useState(5);
     const [userComment, setUserComment] = useState("");
     const [submitting, setSubmitting] = useState(false);
@@ -35,11 +34,9 @@ const ProductDetail = () => {
                 setProduct(currentProduct);
 
                 if (currentProduct) {
-                    // 1. Lấy sản phẩm liên quan
                     const allProducts = await getAllProducts();
                     setRelatedProducts(allProducts.filter(p => p.category === currentProduct.category && String(p.id) !== String(id)).slice(0, 4));
 
-                    // 2. Lấy danh sách đánh giá của sản phẩm này
                     const reviewData = await getReviewsByProductName(currentProduct.productName);
                     setReviews(reviewData.sort((a, b) => b.id - a.id));
                 }
@@ -55,17 +52,14 @@ const ProductDetail = () => {
         setQuantity(1);
     }, [id]);
 
-    // Hàm gửi đánh giá
     const handleSubmitReview = async (e) => {
         e.preventDefault();
 
-        // Kiểm tra xem user có thực sự tồn tại không
         if (!currentUser) {
             alert("Vui lòng đăng nhập để đánh giá!");
             return;
         }
 
-        // Tự động tìm ID (thử cả .id và .userId)
         const actualUserId = currentUser.id || currentUser.userId;
 
         if (!actualUserId) {
@@ -78,7 +72,6 @@ const ProductDetail = () => {
 
         setSubmitting(true);
         try {
-            // Sử dụng actualUserId đã tìm được ở trên
             await saveReview(actualUserId, product.id, userRating, userComment);
             alert("Cảm ơn bạn đã đánh giá sản phẩm!");
             setUserComment("");
@@ -91,6 +84,12 @@ const ProductDetail = () => {
             setSubmitting(false);
         }
     };
+
+    // === TÍNH TOÁN SỐ SAO TRUNG BÌNH ===
+    const averageRating = reviews.length > 0
+        ? reviews.reduce((sum, rev) => sum + rev.rating, 0) / reviews.length
+        : 5; // Mặc định 5 sao nếu chưa có đánh giá
+    // ====================================
 
     if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-600"></div></div>;
     if (!product) return <div className="p-20 text-center"><h2>Không tìm thấy sản phẩm!</h2><Link to="/">Quay lại</Link></div>;
@@ -107,19 +106,26 @@ const ProductDetail = () => {
             </div>
 
             <div className="max-w-7xl mx-auto px-4 py-12">
-                {/* Thông tin sản phẩm chính */}
                 <div className="flex flex-col md:flex-row gap-12 mb-24">
-                    {/* Cột ảnh */}
                     <div className="w-full md:w-1/2">
                         <div className="bg-gray-50 rounded-3xl p-8 aspect-[4/5] flex items-center justify-center">
                             <img src={product.imageUrl || 'https://placehold.co/600x800'} className="w-full h-full object-contain mix-blend-multiply drop-shadow-2xl" alt={product.productName} />
                         </div>
                     </div>
 
-                    {/* Cột thông tin */}
                     <div className="w-full md:w-1/2 flex flex-col justify-center">
                         <p className="text-sm text-blue-600 font-bold uppercase tracking-widest mb-3">{product.category}</p>
-                        <h1 className="text-4xl font-black text-gray-900 mb-4">{product.productName}</h1>
+                        <h1 className="text-4xl font-black text-gray-900 mb-2">{product.productName}</h1>
+
+                        {/* === HIỂN THỊ SAO TRUNG BÌNH Ở ĐÂY === */}
+                        <div className="flex items-center gap-2 mb-6">
+                            <Rating value={averageRating} precision={0.5} readOnly size="medium" />
+                            <span className="text-sm font-medium text-gray-500">
+                                ({reviews.length > 0 ? `${averageRating.toFixed(1)} / 5 - ${reviews.length} đánh giá` : "Chưa có đánh giá"})
+                            </span>
+                        </div>
+                        {/* ==================================== */}
+
                         <div className="flex items-center gap-4 mb-6">
                             <span className="text-3xl font-black text-red-600">{product.price?.toLocaleString('vi-VN')} đ</span>
                             <span className={`px-3 py-1 rounded-full text-xs font-bold ${product.availability > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
@@ -141,11 +147,8 @@ const ProductDetail = () => {
                     </div>
                 </div>
 
-                {/* === SECTION ĐÁNH GIÁ VÀ BÌNH LUẬN === */}
                 <div className="border-t border-gray-100 pt-16">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
-
-                        {/* Cột 1: Form viết đánh giá */}
                         <div className="lg:col-span-1">
                             <h2 className="text-2xl font-black text-gray-900 mb-6">Đánh giá sản phẩm</h2>
                             {currentUser ? (
@@ -180,7 +183,6 @@ const ProductDetail = () => {
                             )}
                         </div>
 
-                        {/* Cột 2 & 3: Danh sách các bình luận */}
                         <div className="lg:col-span-2">
                             <div className="flex items-center justify-between mb-8">
                                 <h3 className="text-xl font-black text-gray-900">Bình luận từ khách hàng ({reviews.length})</h3>
@@ -218,7 +220,6 @@ const ProductDetail = () => {
                     </div>
                 </div>
 
-                {/* Sản phẩm liên quan */}
                 {relatedProducts.length > 0 && (
                     <div className="mt-32">
                         <h2 className="text-2xl font-black text-gray-900 mb-8">Có Thể Bạn Sẽ Thích</h2>
@@ -232,7 +233,5 @@ const ProductDetail = () => {
         </div>
     );
 };
-
-
 
 export default ProductDetail;
